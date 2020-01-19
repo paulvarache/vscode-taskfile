@@ -31,3 +31,11 @@ Tasks in your Taskfiles are detected and made available to VSCode's tasks system
 ### Local installation
 
 You can ask for the Taskfile binary to be installed locally. This will get the latest binary available and install it in the extension's storage. The extnsion will then use this binary to run your tasks.
+
+## Roadmap
+
+Here are listed the features intended to ship
+
+ - Go to definition for imported tasks
+ - Go to definition for variables
+ - Autocomplete provider for global and task-scoped variables
