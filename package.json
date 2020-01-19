@@ -9,6 +9,9 @@
 	"engines": {
 		"vscode": "^1.39.0"
 	},
+	"repository": {
+		"url": "https://github.com/paulvarache/vscode-taskfile"
+	},
 	"categories": [
 		"Other"
 	],
