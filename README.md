@@ -1,3 +1,6 @@
+# VSCode extension for [Taskfile](https://taskfile.dev)
+
+This extension provides Intellisense, Tasks, a Tree View and Hover actions for your Taskfiles
 
 ## Features
 
