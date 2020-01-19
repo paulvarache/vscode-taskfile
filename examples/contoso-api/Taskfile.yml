@@ -1,0 +1,15 @@
+version: 2
+
+vars:
+  APP_NAME: contoso-api
+
+tasks:
+  build:
+    sources: ["Dockerfile"]
+    cmds:
+      - docker build -t {{.APP_NAME}} .
+  run:
+    deps: [build]
+    cmds:
+      - docker run --rm {{.APP_NAME}}
+

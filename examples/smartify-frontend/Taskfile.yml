@@ -1,0 +1,13 @@
+version: 2
+
+vars:
+  PORT: 6000
+
+tasks:
+  serve:
+    cmds:
+      - python -m http.server {{.PORT}}
+    silent: true
+  open:
+    cmds:
+      - open http://localhost:{{.PORT}}

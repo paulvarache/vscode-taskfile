@@ -1,0 +1,198 @@
+{
+	"name": "vscode-taskfile",
+	"displayName": "VSCode integration with https://taskfile.dev",
+	"description": "This extension provides Intellisense, Tasks, a Tree View and Hover actions for your Taskfiles",
+	"version": "0.0.1",
+	"license": "MIT",
+	"publisher": "paulvarache",
+	"enableProposedApi": "true",
+	"engines": {
+		"vscode": "^1.39.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onCommand:workbench.action.tasks.runTask",
+		"onLanguage:yaml",
+		"workspaceContains:Taskfile.yml",
+		"workspaceContains:Taskfile.yaml",
+		"onView:taskfile"
+	],
+	"main": "./out/extension",
+	"contributes": {
+		"problemMatchers": [{
+			"name": "taskfile",
+			"owner": "taskfile",
+			"pattern": {
+				"regexp": "task: (Failed to run task \".+?\"): exit status (\\d+)",
+				"message": 1,
+				"code": 2
+			}
+		}],
+		"configuration": {
+			"title": "%config.title%",
+			"properties": {
+				"taskfile.taskExplorerAction": {
+					"type": "string",
+					"enum": [
+						"none",
+						"open",
+						"run"
+					],
+					"description": "Which command to run when a task is clicked in the explorer view",
+					"scope": "window",
+					"default": "none"
+				}
+			}
+		},
+		"extensionDependencies": [
+			"redhat.vscode-yaml"
+		],
+		"yamlValidation": [
+			{
+				"fileMatch": "Taskfile.yml",
+				"url": "./schemas/taskfile.schema.json"
+			},
+			{
+				"fileMatch": "Taskfile.yaml",
+				"url": "./schemas/taskfile.schema.json"
+			}
+		],
+		"commands": [
+			{
+				"command": "taskfile.run",
+				"title": "Run task",
+				"category": "Taskfile",
+				"icon": {
+					"light": "resources/light/continue.svg",
+					"dark": "resources/dark/continue.svg"
+				}
+			},
+			{
+				"command": "taskfile.watch",
+				"title": "Watch task",
+				"category": "Taskfile"
+			},
+			{
+				"command": "taskfile.stop",
+				"title": "Stop task",
+				"category": "Taskfile",
+				"icon": {
+					"light": "resources/light/stop.svg",
+					"dark": "resources/dark/stop.svg"
+				}
+			},
+			{
+				"command": "taskfile.open",
+				"title": "Edit task",
+				"category": "Taskfile"
+			},
+			{
+				"command": "taskfile.install",
+				"title": "Install task binary",
+				"category": "Taskfile"
+			},
+			{
+				"command": "taskfile.refresh",
+				"title": "Refresh",
+				"category": "Taskfile",
+				"icon": {
+					"light": "resources/light/refresh.svg",
+					"dark": "resources/dark/refresh.svg"
+				}
+			}
+		],
+		"taskDefinitions": [
+			{
+				"type": "taskfile",
+				"required": [
+					"task"
+				],
+				"properties": {
+					"task": {
+						"type": "string",
+						"description": "The task to customize"
+					},
+					"file": {
+						"type": "string",
+						"description": "The Taskfile that provides the task. Can be omitted."
+					}
+				}
+			}
+		],
+		"views": {
+			"explorer": [
+				{
+					"id": "taskfile",
+					"name": "Taskfile",
+					"when": "taskfile:showTasksExplorer"
+				}
+			]
+		},
+		"menus": {
+			"view/title": [
+				{
+					"command": "taskfile.refresh",
+					"when": "view == taskfile",
+					"group": "navigation"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "taskfile.run",
+					"when": "view == taskfile && viewItem == task",
+					"group": "inline"
+				},
+				{
+					"command": "taskfile.stop",
+					"when": "view == taskfile && viewItem == running-task",
+					"group": "inline"
+				},
+				{
+					"command": "taskfile.watch",
+					"when": "view == taskfile && viewItem == task",
+					"group": "navigation@2"
+				},
+				{
+					"command": "taskfile.run",
+					"when": "view == taskfile && viewItem == task",
+					"group": "navigation@1"
+				},
+				{
+					"command": "taskfile.stop",
+					"when": "view == taskfile && viewItem == running-task",
+					"group": "navigation@1"
+				},
+				{
+					"command": "taskfile.open",
+					"when": "view == taskfile && viewItem == task",
+					"group": "navigation@3"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"postinstall": "node ./node_modules/vscode/bin/install",
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -b",
+		"watch": "tsc -b -w"
+	},
+	"devDependencies": {
+		"@types/node": "^8.0.0",
+		"@types/request-promise": "^4.1.45",
+		"@types/semver": "^6.2.0",
+		"tslint": "^5.16.0",
+		"typescript": "^3.5.1",
+		"vscode": "^1.1.36",
+		"vscode-nls-dev": "^3.3.1"
+	},
+	"dependencies": {
+		"@types/unzipper": "^0.10.1",
+		"request-promise": "^4.2.5",
+		"semver": "^7.1.1",
+		"unzipper": "^0.10.5",
+		"vscode-nls": "^4.1.1",
+		"yaml": "^1.7.2"
+	}
+}
