@@ -17,10 +17,8 @@
 	],
 	"activationEvents": [
 		"onCommand:workbench.action.tasks.runTask",
-		"onLanguage:yaml",
-		"workspaceContains:Taskfile.yml",
-		"workspaceContains:Taskfile.yaml",
-		"onView:taskfile"
+		"workspaceContains:**/Taskfile.yml",
+		"workspaceContains:**/Taskfile.yaml"
 	],
 	"main": "./out/extension",
 	"contributes": {
