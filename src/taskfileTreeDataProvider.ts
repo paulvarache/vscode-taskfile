@@ -1,7 +1,6 @@
 import { TreeDataProvider, TreeItem, EventEmitter, Event, ExtensionContext, tasks, TreeItemCollapsibleState, Task, WorkspaceFolder, ThemeIcon, Uri, workspace, TaskGroup, TaskDefinition } from 'vscode';
 import * as path from 'path';
-import { provideTasks, ITaskInfo } from './tasks';
-import { isRunning } from './commands';
+import { ITaskInfo, TaskfileExtensionContext } from './tasks';
 
 class NoTasks extends TreeItem {
 	constructor() {
@@ -32,7 +31,6 @@ export class TaskfileTask extends TreeItem {
 				arguments: [task]
 			}
 		};
-		this.setRunning(isRunning(task));
 		this.taskfile = taskfile;
 		this.task = task;
 		if (command != 'none') {
@@ -99,9 +97,11 @@ export class TaskfileTreeDataProvider implements TreeDataProvider<TreeItem> {
 	readonly onDidChangeTreeData: Event<TreeItem | null> = this._onDidChangeTreeData.event;
 	private taskTree: Folder[] | Taskfile[] | NoTasks[] | null = null;
 	private extensionContext: ExtensionContext;
-	constructor(context: ExtensionContext) {
+	private ctx: TaskfileExtensionContext;
+	constructor(ctx: TaskfileExtensionContext, context: ExtensionContext) {
 		this.extensionContext = context;
 		context.subscriptions;
+		this.ctx = ctx;
 	}
 	public refresh() {
 		this.taskTree = null;
@@ -112,7 +112,7 @@ export class TaskfileTreeDataProvider implements TreeDataProvider<TreeItem> {
 	}
 	async getChildren(element?: TreeItem): Promise<TreeItem[]> {
 		if (!this.taskTree) {
-			let taskItems = await provideTasks();
+			let taskItems = await this.ctx.resolver.provideTasks();
 			if (taskItems) {
 				this.taskTree = this.buildTaskTree(taskItems);
 				if (this.taskTree.length === 0) {
@@ -161,6 +161,7 @@ export class TaskfileTreeDataProvider implements TreeDataProvider<TreeItem> {
 				taskfiles.set(task.scope, taskfile);
 			}
 			let t = new TaskfileTask(this.extensionContext, taskfile, task);
+			t.setRunning(this.ctx.commands.isRunning(task));
 			taskfile.addTask(t);
 		});
 		if (folders.size === 1) {
@@ -174,8 +175,4 @@ export class TaskfileTreeDataProvider implements TreeDataProvider<TreeItem> {
 export interface TaskfileTaskDefinition extends TaskDefinition {
 	task: string;
 	path?: string;
-}
-
-export function isWorkspaceFolder(value: any): value is WorkspaceFolder {
-	return value && typeof value !== 'number';
 }

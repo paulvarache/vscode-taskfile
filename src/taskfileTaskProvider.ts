@@ -1,9 +1,7 @@
-import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import * as yaml from 'yaml';
 import { BINARY_PATH_KEY } from './constants';
-import { getTaskfile, provideTasks, ITaskInfo } from './tasks';
+import { ITaskInfo, TaskfileExtensionContext } from './tasks';
 
 export function taskFromInfo(info: ITaskInfo, binaryPath: string, watch = false) {
 	let kind: TaskfileTaskDefinition = {
@@ -22,14 +20,16 @@ export function taskFromInfo(info: ITaskInfo, binaryPath: string, watch = false)
 
 export class TaskfileTaskProvider implements vscode.TaskProvider {
 	static TaskfileType: string = 'taskfile';
+	private ctx: TaskfileExtensionContext;
 	private state: vscode.Memento;
 
-	constructor(state : vscode.Memento) {
+	constructor(ctx: TaskfileExtensionContext, state : vscode.Memento) {
 		this.state = state;
+		this.ctx = ctx;
 	}
 
 	public async provideTasks() {
-		const tasks = await provideTasks();
+		const tasks = await this.ctx.resolver.provideTasks();
 
 		const binaryPath: string|undefined = this.state.get(BINARY_PATH_KEY);
 		if (!binaryPath) {
@@ -81,39 +81,4 @@ export function isTestTask(name: string): boolean {
 		}
 	}
 	return false;
-}
-
-export async function getTasks(): Promise<vscode.Task[]> {
-	let emptyTasks: vscode.Task[] = [];
-	let taskFile = await getTaskfile();
-	if (!taskFile) {
-		return emptyTasks;
-	}
-
-	const contents = fs.readFileSync(taskFile, 'utf-8');
-
-	const doc = yaml.parse(contents);
-
-	let result: vscode.Task[] = [];
-
-	if (!doc.tasks) {
-		return emptyTasks;
-	}
-
-	Object.keys(doc.tasks).forEach((name) => {
-		let kind: TaskfileTaskDefinition = {
-			type: TaskfileTaskProvider.TaskfileType,
-			task: name
-		};
-		let task = new vscode.Task(kind, name, 'task', new vscode.ShellExecution(`task ${name}`));
-		result.push(task);
-		let lowerCaseLine = name.toLowerCase();
-		if (isBuildTask(lowerCaseLine)) {
-			task.group = vscode.TaskGroup.Build;
-		} else if (isTestTask(lowerCaseLine)) {
-			task.group = vscode.TaskGroup.Test;
-		}
-	});
-
-	return result;
 }
