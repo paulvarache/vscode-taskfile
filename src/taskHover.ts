@@ -1,18 +1,14 @@
 import { HoverProvider, TextDocument, Position, CancellationToken, Hover, MarkdownString, Uri, Range, tasks } from 'vscode';
-import { provideTasks, ITaskInfo } from './tasks';
-import { isRunning } from './commands';
-
-const cachedTasksMap: Map<Uri, ITaskInfo[]> = new Map();
+import { ITaskInfo, TaskfileExtensionContext } from './tasks';
 
 export class TaskHoverProvider implements HoverProvider {
+	private ctx: TaskfileExtensionContext;
+	constructor(ctx: TaskfileExtensionContext) {
+		this.ctx = ctx;
+	}
 	async provideHover(document: TextDocument, position: Position, _token: CancellationToken): Promise<Hover|undefined> {
 		let hover: Hover | undefined = undefined;
-		let docTasks = cachedTasksMap.get(document.uri);
-		if (!docTasks) {
-			const tasks = await provideTasks();
-			docTasks = tasks.filter(i => i.scope === document.uri.fsPath);
-			cachedTasksMap.set(document.uri, docTasks);
-		}
+		const docTasks = await this.ctx.resolver.getTasksForTaskfile(document.uri.fsPath);
 
 		docTasks!.forEach((taskInfo) => {
 			const taskRef = taskInfo.task;
@@ -20,7 +16,7 @@ export class TaskHoverProvider implements HoverProvider {
 			if (range.contains(position)) {
 				const contents = new MarkdownString();
 				contents.isTrusted = true;
-				if (!isRunning(taskInfo)) {
+				if (!this.ctx.commands.isRunning(taskInfo)) {
 					contents.appendMarkdown(this.createRunTaskMarkdown(taskInfo));
 					contents.appendMarkdown(' | ')
 					contents.appendMarkdown(this.createWatchTaskMarkdown(taskInfo));
@@ -28,7 +24,13 @@ export class TaskHoverProvider implements HoverProvider {
 					contents.appendMarkdown('Task running | ')
 					contents.appendMarkdown(this.createStopTaskMarkdown(taskInfo));
 				}
-				hover = new Hover(contents);
+				const range = new Range(
+					taskInfo.task.startLine,
+					taskInfo.task.startCol,
+					taskInfo.task.endLine,
+					taskInfo.task.endCol,
+				);
+				hover = new Hover(contents, range);
 			}
 		});
 		

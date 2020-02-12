@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import { TaskfileTaskProvider } from './taskfileTaskProvider';
-import { hasTaskfile } from './tasks';
+import { hasTaskfile, TaskfileExtensionContext } from './tasks';
 import { TaskfileTreeDataProvider } from './taskfileTreeDataProvider';
 import { TaskHoverProvider } from './taskHover';
-import * as commands from './commands';
+import { registerLanguageClient } from './languageClient';
 
 let treeDataProvider: TaskfileTreeDataProvider|null = null;
 
@@ -13,58 +13,54 @@ export async function activate(_context: vscode.ExtensionContext): Promise<void>
 		return;
 	}
 
-	registerTaskProvider(_context);
-	treeDataProvider = registerExplorer(_context);
+	const cl = await registerLanguageClient(_context);
 
-	vscode.languages.registerHoverProvider({ language: 'yaml', scheme: 'file', pattern: '**/Taskfile.{yml,yaml}' }, new TaskHoverProvider());
+	const ctx = new TaskfileExtensionContext(cl);
 
-	vscode.commands.registerCommand('taskfile.refresh', () => commands.refresh(treeDataProvider));
-	vscode.commands.registerCommand('taskfile.open', (info) => commands.open(info));
-	vscode.commands.registerCommand('taskfile.run', (info) => commands.run(_context, info));
-	vscode.commands.registerCommand('taskfile.watch', (info) => commands.run(_context, info, true));
-	vscode.commands.registerCommand('taskfile.stop', (info) => commands.stop(info));
-	vscode.commands.registerCommand('taskfile.install', () => commands.install(_context));
+	registerTaskProvider(ctx, _context);
+	registerExplorer(ctx, _context);
+
+	vscode.languages.registerHoverProvider({ language: 'yaml', scheme: 'file', pattern: '**/Taskfile.{yml,yaml}' }, new TaskHoverProvider(ctx));
+
+	vscode.commands.registerCommand('taskfile.refresh', () => ctx.refresh(true));
+	vscode.commands.registerCommand('taskfile.open', (info) => ctx.commands.open(info));
+	vscode.commands.registerCommand('taskfile.run', (info) => ctx.commands.run(_context, info));
+	vscode.commands.registerCommand('taskfile.watch', (info) => ctx.commands.run(_context, info, true));
+	vscode.commands.registerCommand('taskfile.stop', (info) => ctx.commands.stop(info));
+	vscode.commands.registerCommand('taskfile.install', () => ctx.commands.install(_context));
+	vscode.commands.registerCommand('taskfile.lsp.restart', () => ctx.commands.restartLSP(_context));
+	vscode.commands.registerCommand('taskfile.lsp.update', () => ctx.commands.updateLSP(_context));
 
 	if (await hasTaskfile()) {
 		vscode.commands.executeCommand('setContext', 'taskfile:showTasksExplorer', true);
 	}
 
 	// When a command succesfully runs, parts of the tree's UI might need to change
-	_context.subscriptions.push(commands.onDidUpdateTaskState(() => {
+	_context.subscriptions.push(ctx.commands.onDidUpdateTaskState(() => {
 		// Rebuild the tree without invalidating the state
-		treeDataProvider?.refresh();
+		ctx.treeDataProvider?.refresh();
 	}));
 }
 
-export function refreshTasks() {
-	commands.refresh(treeDataProvider);
-}
-
-function registerTaskProvider(context : vscode.ExtensionContext) {
+function registerTaskProvider(ctx: TaskfileExtensionContext, context : vscode.ExtensionContext) {
 	if (vscode.workspace.workspaceFolders) {
-		let watcher = vscode.workspace.createFileSystemWatcher('**/Taskfile.{yml,yaml}');
-		watcher.onDidChange(() => refreshTasks());
-		watcher.onDidDelete(() => refreshTasks());
-		watcher.onDidCreate(() => refreshTasks());
-		context.subscriptions.push(watcher);
-
-		let workspaceWatcher = vscode.workspace.onDidChangeWorkspaceFolders(() => refreshTasks());
+		let workspaceWatcher = vscode.workspace.onDidChangeWorkspaceFolders(() => ctx.refresh(true));
 		context.subscriptions.push(workspaceWatcher);
 
-		let provider = new TaskfileTaskProvider(context.globalState);
+		let provider = new TaskfileTaskProvider(ctx, context.globalState);
 		let disposable = vscode.workspace.registerTaskProvider(TaskfileTaskProvider.TaskfileType, provider);
 		context.subscriptions.push(disposable);
 		return disposable;
 	}
 }
 
-function registerExplorer(context : vscode.ExtensionContext) {
+function registerExplorer(ctx: TaskfileExtensionContext, context : vscode.ExtensionContext) {
 	if (vscode.workspace.workspaceFolders) {
-		let treeDataProvider = new TaskfileTreeDataProvider(context);
+		let treeDataProvider = new TaskfileTreeDataProvider(ctx, context);
 		context.subscriptions.push(treeDataProvider);
 		const view = vscode.window.createTreeView('taskfile', { treeDataProvider: treeDataProvider, showCollapseAll: true });
 		context.subscriptions.push(view);
-		return treeDataProvider;
+		ctx.treeDataProvider = treeDataProvider;
 	}
 	return null;
 }
