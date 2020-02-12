@@ -2,7 +2,7 @@
 	"name": "vscode-taskfile",
 	"displayName": "VSCode integration with https://taskfile.dev",
 	"description": "This extension provides Intellisense, Tasks, a Tree View and Hover actions for your Taskfiles",
-	"version": "0.0.1",
+	"version": "0.0.3",
 	"license": "MIT",
 	"publisher": "paulvarache",
 	"enableProposedApi": "true",
@@ -47,9 +47,6 @@
 				}
 			}
 		},
-		"extensionDependencies": [
-			"redhat.vscode-yaml"
-		],
 		"yamlValidation": [
 			{
 				"fileMatch": "Taskfile.yml",
@@ -173,6 +170,9 @@
 			]
 		}
 	},
+	"extensionDependencies": [
+		"redhat.vscode-yaml"
+	],
 	"scripts": {
 		"postinstall": "node ./node_modules/vscode/bin/install",
 		"vscode:prepublish": "npm run compile",
