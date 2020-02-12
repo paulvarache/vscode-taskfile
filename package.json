@@ -20,17 +20,20 @@
 		"workspaceContains:**/Taskfile.yml",
 		"workspaceContains:**/Taskfile.yaml"
 	],
+	"icon": "icons/extension-icon.png",
 	"main": "./out/extension",
 	"contributes": {
-		"problemMatchers": [{
-			"name": "taskfile",
-			"owner": "taskfile",
-			"pattern": {
-				"regexp": "task: (Failed to run task \".+?\"): exit status (\\d+)",
-				"message": 1,
-				"code": 2
+		"problemMatchers": [
+			{
+				"name": "taskfile",
+				"owner": "taskfile",
+				"pattern": {
+					"regexp": "task: (Failed to run task \".+?\"): exit status (\\d+)",
+					"message": 1,
+					"code": 2
+				}
 			}
-		}],
+		],
 		"configuration": {
 			"title": "%config.title%",
 			"properties": {
@@ -99,6 +102,16 @@
 					"light": "resources/light/refresh.svg",
 					"dark": "resources/dark/refresh.svg"
 				}
+			},
+			{
+				"command": "taskfile.lsp.restart",
+				"title": "Restart Language Server",
+				"category": "Taskfile"
+			},
+			{
+				"command": "taskfile.lsp.update",
+				"title": "Install the latest version of the Language Server",
+				"category": "Taskfile"
 			}
 		],
 		"taskDefinitions": [
@@ -174,25 +187,33 @@
 		"redhat.vscode-yaml"
 	],
 	"scripts": {
-		"postinstall": "node ./node_modules/vscode/bin/install",
-		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -b",
-		"watch": "tsc -b -w"
+		"vscode:prepublish": "webpack --mode production",
+		"webpack": "webpack --mode development",
+		"webpack-dev": "webpack --mode development --watch",
+		"test-compile": "tsc -p ./"
 	},
 	"devDependencies": {
 		"@types/node": "^8.0.0",
-		"@types/request-promise": "^4.1.45",
-		"@types/semver": "^6.2.0",
+		"@types/request-promise-native": "^1.0.17",
+		"@types/semver": "^7.1.0",
+		"ts-loader": "^6.2.1",
 		"tslint": "^5.16.0",
 		"typescript": "^3.5.1",
 		"vscode": "^1.1.36",
-		"vscode-nls-dev": "^3.3.1"
+		"vscode-nls-dev": "^3.3.1",
+		"webpack": "^4.41.5",
+		"webpack-cli": "^3.3.10"
 	},
 	"dependencies": {
+		"@types/tar": "^4.0.3",
 		"@types/unzipper": "^0.10.1",
-		"request-promise": "^4.2.5",
-		"semver": "^7.1.1",
+		"make-dir": "^3.0.0",
+		"request": "^2.88.0",
+		"request-promise-native": "^1.0.8",
+		"semver": "6.0.0",
+		"tar": "^6.0.1",
 		"unzipper": "^0.10.5",
+		"vscode-languageclient": "^6.0.0",
 		"vscode-nls": "^4.1.1",
 		"yaml": "^1.7.2"
 	}

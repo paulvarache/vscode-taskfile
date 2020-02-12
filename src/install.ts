@@ -3,7 +3,7 @@ import * as semver from 'semver';
 import * as os from 'os';
 import * as path from 'path';
 import * as unzip from 'unzipper';
-import * as rp from 'request-promise';
+import * as rp from 'request-promise-native';
 import { REPO_URL } from './constants';
 
 function exec(command: string, options: cp.ExecOptions): Promise<{ stdout: string; stderr: string }> {
@@ -55,8 +55,8 @@ export function getOSInfo() {
 
 	const extMap : { [K: string] : string } = {
 		windows: 'zip',
-		darwin: 'tar.gz',
-		linux: '.tar.gz', // TODO: Find the correct extension
+		darwin: '.tar.gz',
+		linux: '.tar.gz',
 	};
 
 	const platform = platformMap[os.platform()];
@@ -81,6 +81,7 @@ export function downloadAsset(asset : IAsset, platform : string, storagePath : s
 	if (platform === 'windows') {
 		return installWindows(asset as IAsset, storagePath);
 	}
+	// TODO: Handle macos and linux
 	throw new Error('Not supported');
 }
 

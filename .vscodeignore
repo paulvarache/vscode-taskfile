@@ -9,3 +9,6 @@ tsconfig.json
 vsc-extension-quickstart.md
 images/**
 examples/**
+node_modules
+examples
+*.vsix
