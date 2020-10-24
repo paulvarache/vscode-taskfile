@@ -9,8 +9,12 @@ export function taskFromInfo(info: ITaskInfo, binaryPath: string, watch = false)
 		task: info.task.value,
 	};
 	// Extend the environment with the path to the local binary
-	const env = Object.assign({}, process.env, { PATH: `${path.dirname(binaryPath)}:${process.env.PATH}` });
-	const se = new vscode.ShellExecution(`task ${info.task.value}${watch ? ' --watch' : ''}`, { cwd: path.dirname(info.scope), env });
+	const env = Object.assign({}, process.env as { [K: string]: string }, { PATH: `${path.dirname(binaryPath)}:${process.env.PATH}` });
+	const se = new vscode.ShellExecution(
+		`task ${info.task.value}${watch ? ' --watch' : ''}`,
+		[],
+		{ cwd: path.dirname(info.scope), env },
+	);
 	const folder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(info.scope));
 	if (!folder) {
 		throw new Error('OOOPS');
@@ -23,7 +27,7 @@ export class TaskfileTaskProvider implements vscode.TaskProvider {
 	private ctx: TaskfileExtensionContext;
 	private state: vscode.Memento;
 
-	constructor(ctx: TaskfileExtensionContext, state : vscode.Memento) {
+	constructor(ctx: TaskfileExtensionContext, state: vscode.Memento) {
 		this.state = state;
 		this.ctx = ctx;
 	}
@@ -31,7 +35,7 @@ export class TaskfileTaskProvider implements vscode.TaskProvider {
 	public async provideTasks() {
 		const tasks = await this.ctx.resolver.provideTasks();
 
-		const binaryPath: string|undefined = this.state.get(BINARY_PATH_KEY);
+		const binaryPath: string | undefined = this.state.get(BINARY_PATH_KEY);
 		if (!binaryPath) {
 			throw new Error('Not installed');
 		}
