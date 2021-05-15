@@ -3,6 +3,7 @@ import * as semver from 'semver';
 import * as os from 'os';
 import * as path from 'path';
 import * as unzip from 'unzipper';
+import * as tar from 'tar';
 import * as rp from 'request-promise-native';
 import { REPO_URL } from './constants';
 
@@ -55,8 +56,8 @@ export function getOSInfo() {
 
 	const extMap : { [K: string] : string } = {
 		windows: 'zip',
-		darwin: '.tar.gz',
-		linux: '.tar.gz',
+		darwin: 'tar.gz',
+		linux: 'tar.gz',
 	};
 
 	const platform = platformMap[os.platform()];
@@ -81,8 +82,7 @@ export function downloadAsset(asset : IAsset, platform : string, storagePath : s
 	if (platform === 'windows') {
 		return installWindows(asset as IAsset, storagePath);
 	}
-	// TODO: Handle macos and linux
-	throw new Error('Not supported');
+	return installMacOSOrLinux(asset as IAsset, storagePath);
 }
 
 export interface IAsset {
@@ -96,5 +96,14 @@ export function installWindows(asset : IAsset, storagePath : string) : Promise<s
 			.pipe(unzip.Extract({ path: storagePath }))
 			.once('close', () => resolve(path.join(storagePath, 'task.exe')))
 			.once('error', (err) => reject(err));
-	})
+	});
+}
+
+export function installMacOSOrLinux(asset : IAsset, storagePath : string) : Promise<string> {
+	return new Promise((resolve, reject) => {
+		rp(asset.browser_download_url)
+			.pipe(tar.x({ cwd: storagePath }))
+			.once('close', () => resolve(path.join(storagePath, 'task')))
+			.once('error', (err) => reject(err));
+	});
 }

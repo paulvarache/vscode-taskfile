@@ -2,10 +2,9 @@
 	"name": "vscode-taskfile",
 	"displayName": "VSCode integration with https://taskfile.dev",
 	"description": "This extension provides Intellisense, Tasks, a Tree View and Hover actions for your Taskfiles",
-	"version": "0.0.5",
+	"version": "0.0.6",
 	"license": "MIT",
 	"publisher": "paulvarache",
-	"enableProposedApi": "true",
 	"engines": {
 		"vscode": "^1.39.0"
 	},
@@ -211,7 +210,7 @@
 		"request": "^2.88.0",
 		"request-promise-native": "^1.0.8",
 		"semver": "6.0.0",
-		"tar": "^6.0.1",
+		"tar": "^6.1.0",
 		"unzipper": "^0.10.5",
 		"vscode-languageclient": "^6.0.0",
 		"vscode-nls": "^4.1.1",

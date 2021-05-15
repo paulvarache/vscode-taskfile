@@ -154,7 +154,7 @@ export class Commands {
 							}
 							progress.report({ increment: 50, message: 'Downloading binary' });
 							return downloadAsset(asset, info.platform, _context.storagePath)
-								.then((binaryPath) => {
+							.then((binaryPath) => {
 									if (token.isCancellationRequested) {
 										return;
 									}
