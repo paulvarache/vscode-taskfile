@@ -211,7 +211,7 @@
 		"request": "^2.88.0",
 		"request-promise-native": "^1.0.8",
 		"semver": "6.0.0",
-		"tar": "^6.0.1",
+		"tar": "^6.1.9",
 		"unzipper": "^0.10.5",
 		"vscode-languageclient": "^6.0.0",
 		"vscode-nls": "^4.1.1",
